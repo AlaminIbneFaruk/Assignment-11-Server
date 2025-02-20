@@ -33,7 +33,16 @@ async function connectDB() {
         process.exit(1);
     }
 }
-
+app.get("/artifacts", async (req, res) => {
+  const limit = parseInt(req.query.limit) || 6;
+  try {
+      const artifacts = await collection.find().limit(limit).toArray();
+      res.json(artifacts);
+  } catch (error) {
+      console.error("Fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch artifacts", error: error.message });
+  }
+});
 app.get("/", (req, res) => res.send("Hello World!"));
 
 connectDB().then(() => {
