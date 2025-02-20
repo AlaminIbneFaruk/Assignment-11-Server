@@ -54,6 +54,32 @@ app.get("/all-artifacts", async (req, res) => {
   }
 });
 
+app.get("/myartifacts/:userid", async (req, res) => {
+  const { userid } = req.params;
+  try {
+      const artifacts = await collection.find({ "addedBy.uid": userid }).toArray();
+      if (!artifacts.length) return res.status(404).json({ message: "No artifacts found for this user." });
+      res.json(artifacts);
+  } catch (error) {
+      console.error("Fetch error:", error);
+      res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+});
+
+app.get("/artifact-details/:id", async (req, res) => {
+  const { id } = req.params;
+  if (!ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid artifact ID" });
+  
+  try {
+    const artifact = await collection.findOne({ _id: new ObjectId(id) });
+    if (!artifact) return res.status(404).json({ message: "Artifact not found" });
+    res.json(artifact);
+  } catch (error) {
+    console.error("Fetch error:", error);
+    res.status(500).json({ message: "Failed to fetch artifact", error: error.message });
+  }
+});
+
 app.get("/", (req, res) => res.send("Hello World!"));
 
 connectDB().then(() => {
