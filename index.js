@@ -43,6 +43,17 @@ app.get("/artifacts", async (req, res) => {
       res.status(500).json({ message: "Failed to fetch artifacts", error: error.message });
   }
 });
+
+app.get("/all-artifacts", async (req, res) => {
+  try {
+      const artifacts = await collection.find().toArray();
+      res.json(artifacts);
+  } catch (error) {
+      console.error("Fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch artifacts", error: error.message });
+  }
+});
+
 app.get("/", (req, res) => res.send("Hello World!"));
 
 connectDB().then(() => {
