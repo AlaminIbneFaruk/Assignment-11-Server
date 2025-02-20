@@ -80,6 +80,50 @@ app.get("/artifact-details/:id", async (req, res) => {
   }
 });
 
+app.post("/add-artifact", async (req, res) => {
+  const artifact = req.body;
+  if (!artifact.artifactName || !artifact.addedBy) return res.status(400).json({ message: "Missing required fields" });
+
+  try {
+      const result = await collection.insertOne(artifact);
+      res.status(201).json({ message: "Artifact added successfully", id: result.insertedId });
+  } catch (error) {
+      console.error("Insert error:", error);
+      res.status(500).json({ message: "Failed to add artifact", error: error.message });
+  }
+});
+
+
+app.put("/artifactupdate/:id", async (req, res) => {
+  const { id } = req.params;
+  const updatedArtifact = req.body; 
+  if (!ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid artifact ID" });
+
+
+  if (!updatedArtifact.artifactName || !updatedArtifact.addedBy) {
+      return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  try {
+
+      const { _id, ...updateData } = updatedArtifact;
+
+      const result = await collection.updateOne(
+          { _id: new ObjectId(id) }, 
+          { $set: updateData } 
+      );
+
+      if (result.modifiedCount === 0) {
+          return res.status(404).json({ message: "Artifact not found or no changes made" });
+      }
+
+      res.json({ message: "Artifact updated successfully" });
+  } catch (error) {
+      console.error("Update error:", error);
+      res.status(500).json({ message: "Failed to update artifact", error: error.message });
+  }
+});
+
 app.get("/", (req, res) => res.send("Hello World!"));
 
 connectDB().then(() => {
